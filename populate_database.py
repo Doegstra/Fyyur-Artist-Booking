@@ -1,8 +1,6 @@
 from app import *
 import datetime
 import sys
-# TODO Wie kriegt man in der loesung all die Daten in die Datenbank?
-# TODO Script ??
 #----------------------------------------------------------------------------#
 # Populate database
 #----------------------------------------------------------------------------#
@@ -47,12 +45,6 @@ artist3 = Artist(
     image_link="https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
     seeking_venues=False
 )
-
-# in command line
-# from app import *
-# from populate_database import *
-# db.session.add_all([artist1, artist2, artist3])
-# db.session.commit()
 
 #----------------------------------------------------------------------------#
 # venues
@@ -99,11 +91,6 @@ venue3 = Venue(
     website="https://www.parksquarelivemusicandcoffee.com",
     seeking_talent=False
 )
-# in command line
-# from app import *
-# from populate_database import *
-# db.session.add_all([venue1, venue2, venue3])
-# db.session.commit()
 
 #----------------------------------------------------------------------------#
 # shows
@@ -128,8 +115,14 @@ shows = [
     Show(artist_id=3, venue_id=3, start_time=datetime.datetime(
         year=2035, month=4, day=15, hour=20, minute=0))
 ]
-# in command line
-# from app import *
-# from populate_database import *
-# db.session.add_all(shows)
-# db.sesson.commit()
+
+
+if __name__ == "__main__":
+    db.session.add_all([artist1, artist2, artist3])
+    db.session.commit()
+
+    db.session.add_all([venue1, venue2, venue3])
+    db.session.commit()
+
+    db.session.add_all(shows)
+    db.session.commit()
