@@ -14,6 +14,7 @@ from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
 from sqlalchemy import func
+import sys
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -29,7 +30,9 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
-
+# TODO Darstellung der Genres
+# Bei Venues  haengt alles zusammen
+# Nach create venue kommt gar nichts an
 
 class Venue(db.Model):
     __tablename__ = 'Venue'
@@ -240,14 +243,34 @@ def create_venue_form():
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
-    # TODO: insert form data as a new Venue record in the db, instead
-    # TODO: modify data to be the data object returned from db insertion
+    form = VenueForm()
+    try:
+        new_venue = Venue(name=form.name.data,
+                          city=form.city.data,
+                          state=form.state.data,
+                          address=form.address.data,
+                          phone=form.phone.data,
+                          image_link=form.image_link.data,
+                          genres=form.genres.data,
+                          facebook_link=form.facebook_link.data,
+                          seeking_description=form.seeking_description.data,
+                          #   seeking_talent=True if 'seeking_talent' in form else False
+                          seeking_talent=form.seeking_talent == True
+                          )
+        db.session.add(new_venue)
+        db.session.commit()
+        # on successful db insert, flash success
+        flash('Venue ' + request.form['name'] +
+              ' was successfully listed!')
+    except SQLAlchemyError as e:
+        print(e)
+        db.session.rollback()
+        print(sys.exc_info())
+        flash('An error occurred. Venue ' +
+              request.form['name'] + ' could not be listed.')
+    finally:
+        db.session.close()
 
-    # on successful db insert, flash success
-    flash('Venue ' + request.form['name'] + ' was successfully listed!')
-    # TODO: on unsuccessful db insert, flash an error instead.
-    # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
-    # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
     return render_template('pages/home.html')
 
 
