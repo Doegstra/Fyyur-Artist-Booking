@@ -73,6 +73,21 @@
 </section>
 
 <a href="/artists/{{ artist.id }}/edit"><button class="btn btn-primary btn-lg">Edit</button></a>
+<button onclick="deleteArtist(event)" class="btn btn-primary btn-lg" data-id="{{ artist.id }}">Delete</button>
 
+<script>
+	function deleteArtist(e) {
+		const id = e.target.dataset.id;
+		fetch('/artist/' + id, {
+			method: 'DELETE'
+		})
+		.then(function(response) {
+			window.location.href = response.url;
+		})
+		.catch(function(error) {
+			console.log(error);
+		})
+	}
+</script>
 {% endblock %}
 
