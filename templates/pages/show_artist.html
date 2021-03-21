@@ -72,10 +72,22 @@
 	</div>
 </section>
 
-<a href="/artists/{{ artist.id }}/edit"><button class="btn btn-primary btn-lg">Edit</button></a>
+<button onclick="editArtist(event)" class="btn btn-primary btn-lg" data-id="{{ artist.id }}">Edit</button>
 <button onclick="deleteArtist(event)" class="btn btn-primary btn-lg" data-id="{{ artist.id }}">Delete</button>
 
 <script>
+	function editArtist(e) {
+		const id = e.target.dataset.id;
+		fetch('/artists/' + id + '/edit', {
+			method: 'GET'
+		})
+		.then(function(response) {
+			window.location.href = '/artists/' + id + '/edit';
+		})
+		.catch(function(error) {
+			console.log(error);
+		})
+	}
 	function deleteArtist(e) {
 		const id = e.target.dataset.id;
 		fetch('/artist/' + id, {

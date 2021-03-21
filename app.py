@@ -32,9 +32,6 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
-# TODO Darstellung der Genres
-# Bei Venues  haengt alles zusammen
-# Nach create venue kommt gar nichts an
 
 class Venue(db.Model):
     __tablename__ = 'Venue'
@@ -407,27 +404,49 @@ def delete_artist(artist_id):
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
     form = ArtistForm()
-    artist = {
-        "id": 4,
-        "name": "Guns N Petals",
-        "genres": ["Rock n Roll"],
-        "city": "San Francisco",
-        "state": "CA",
-        "phone": "326-123-5000",
-        "website": "https://www.gunsnpetalsband.com",
-        "facebook_link": "https://www.facebook.com/GunsNPetals",
-        "seeking_venue": True,
-        "seeking_description": "Looking for shows to perform at in the San Francisco Bay Area!",
-        "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80"
+    artist = Artist.query.get(artist_id)
+
+    venue = {
+        "id": artist.id,
+        "name": artist.name,
+        "genres": artist.genres,
+        "city": artist.city,
+        "state": artist.state,
+        "phone": artist.phone,
+        "website": artist.website,
+        "facebook_link": artist.facebook_link,
+        "seeking_venue": artist.seeking_venues,
+        "seeking_description": artist.seeking_description,
+        "image_link": artist.image_link
     }
-    # TODO: populate form with fields from artist with ID <artist_id>
+
     return render_template('forms/edit_artist.html', form=form, artist=artist)
 
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
-    # TODO: take values from the form submitted, and update existing
-    # artist record with ID <artist_id> using the new attributes
+    form = ArtistForm()
+    try:
+        artist = Artist.query.get(artist_id)
+        artist.name = form.name.data
+        artist.genres = form.genres.data
+        artist.city = form.city.data
+        artist.state = form.state.data
+        artist.phone = form.phone.data
+        artist.facebook_link = form.facebook_link.data
+        artist.website = form.website_link.data
+        artist.image_link = form.image_link.data
+        artist.seeking_venues = form.seeking_venue.data
+        artist.seeking_description = form.seeking_description.data
+
+        db.session.commit()
+        flash(f'Artist {artist.name} has been updated.')
+    except SQLAlchemyError as e:
+        print(e)
+        flash(f'An error occured while trying to update Artist {artist.name}.')
+        db.session.rollback()
+    finally:
+        db.session.close()
 
     return redirect(url_for('show_artist', artist_id=artist_id))
 
@@ -456,12 +475,11 @@ def edit_venue(venue_id):
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
+    form = VenueForm()
     try:
-        form = VenueForm()
         venue = Venue.query.get(venue_id)
-        name = form.name.data
 
-        venue.name = name
+        venue.name = form.name.data
         venue.genres = form.genres.data
         venue.city = form.city.data
         venue.state = form.state.data
@@ -474,10 +492,10 @@ def edit_venue_submission(venue_id):
         venue.seeking_description = form.seeking_description.data
 
         db.session.commit()
-        flash(f'Venue {name} has been updated.')
+        flash(f'Venue {venue.name} has been updated.')
     except SQLAlchemyError as e:
         print(e)
-        flash(f'An error occured while trying to update Venue {name}.')
+        flash(f'An error occured while trying to update Venue {venue.name}.')
         db.session.rollback()
     finally:
         db.session.close()
