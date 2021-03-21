@@ -14,6 +14,7 @@ from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
 from sqlalchemy import func
+from sqlalchemy.exc import SQLAlchemyError
 import sys
 #----------------------------------------------------------------------------#
 # App Config.
@@ -213,7 +214,7 @@ def show_venue(venue_id):
     data = {
         "id": venue.id,
         "name": venue.name,
-        "genres": "".join(venue.genres[1:-1]).split(','),
+        "genres": venue.genres,
         "address": venue.address,
         "city": venue.city,
         "state": venue.state,
@@ -254,7 +255,6 @@ def create_venue_submission():
                           genres=form.genres.data,
                           facebook_link=form.facebook_link.data,
                           seeking_description=form.seeking_description.data,
-                          #   seeking_talent=True if 'seeking_talent' in form else False
                           seeking_talent=form.seeking_talent == True
                           )
         db.session.add(new_venue)
@@ -276,12 +276,19 @@ def create_venue_submission():
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
-    # TODO: Complete this endpoint for taking a venue_id, and using
-    # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
 
-    # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-    # clicking that button delete it from the db then redirect the user to the homepage
-    return None
+    try:
+        venue = Venue.query.filter_by(id=venue_id).delete()
+        db.session.commit()
+        flash(f'Venue {venue_id} was successfully deleted.')
+    except SQLAlchemyError as e:
+        print(e)
+        db.session.rollback()
+        flash(f'An error occurred. Venue {venue_id} could not be deleted.')
+    finally:
+        db.session.close()
+
+    return redirect(url_for('index'))
 
 #  Artists
 #  ----------------------------------------------------------------
@@ -358,7 +365,8 @@ def show_artist(artist_id):
     data = {
         "id": artist.id,
         "name": artist.name,
-        "genres": "".join(artist.genres[1:-1]).split(','),
+        # "".join(artist.genres[1:-1]).split(','), # TODO wieder raus
+        "genres": artist.genres,
         "city": artist.city,
         "state": artist.state,
         "phone": artist.phone,
