@@ -6,7 +6,15 @@ import json
 import dateutil.parser
 import babel
 import datetime
-from flask import Flask, render_template, request, Response, flash, redirect, url_for
+from flask import (
+    flash,
+    Flask,
+    redirect,
+    render_template,
+    request,
+    Response,
+    url_for
+)
 import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
@@ -119,26 +127,27 @@ def search_venues():
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
     # shows the venue page with the given venue_id
-
     venue = Venue.query.get(venue_id)
-    shows = Show.query.filter_by(venue_id=venue.id).all()
 
     # get info on past and upcoming shows
     past_shows = []
     upcoming_shows = []
     now = datetime.now()
-    for show in shows:
-        artist = Artist.query.get(show.artist_id)
-        info = {
-            "artist_id": artist.id,
-            "artist_name": artist.name,
-            "artist_image_link": artist.image_link,
+
+    shows_details = db.session.query(Show).join(
+        Artist).filter(Show.venue_id == venue_id).all()
+
+    for show in shows_details:
+        info_dict = {
+            "artist_id": show.artist_id,
+            "artist_name": show.artist.name,
+            "artist_image_link": show.artist.image_link,
             "start_time": format_datetime(str(show.start_time))
         }
         if show.start_time > now:
-            upcoming_shows.append(info)
+            upcoming_shows.append(info_dict)
         else:
-            past_shows.append(info)
+            past_shows.append(info_dict)
 
     data = {
         "id": venue.id,
@@ -272,24 +281,26 @@ def search_artists():
 def show_artist(artist_id):
     # shows the artist page with the given artist_id
     artist = Artist.query.get(artist_id)
-    shows = Show.query.filter_by(artist_id=artist.id).all()
 
     # get info on past and upcoming shows
     past_shows = []
     upcoming_shows = []
     now = datetime.now()
-    for show in shows:
-        venue = Venue.query.get(show.venue_id)
-        info = {
-            "venue_id": venue.id,
-            "venue_name": venue.name,
-            "venue_image_link": venue.image_link,
+
+    show_details = db.session.query(Show).join(
+        Venue).filter(Show.artist_id == artist_id).all()
+
+    for show in show_details:
+        info_dict = {
+            "venue_id": show.venue_id,
+            "venue_name": show.venue.name,
+            "venue_image_link": show.venue.image_link,
             "start_time": format_datetime(str(show.start_time))
         }
         if show.start_time > now:
-            upcoming_shows.append(info)
+            upcoming_shows.append(info_dict)
         else:
-            past_shows.append(info)
+            past_shows.append(info_dict)
 
     data = {
         "id": artist.id,

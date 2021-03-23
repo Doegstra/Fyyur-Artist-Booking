@@ -9,3 +9,5 @@ DEBUG = True
 # Connect to the database
 # TODO use your own 'username' and 'password'
 SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:root@localhost:5432/fyyur'
+
+SQLALCHEMY_TRACK_MODIFICATIONS = False
